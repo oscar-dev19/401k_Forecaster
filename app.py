@@ -2,12 +2,6 @@ import dash
 from dash import dcc, html
 from dash.dependencies import Input, Output
 
-#these dependencies allows github pages to render app
-import dash_renderer
-
-
-
-
 app = dash.Dash(__name__)
 
 app.layout = html.Div([
@@ -36,11 +30,15 @@ app.layout = html.Div([
     ],
 )
 def update_investment_forecast_graph(age, initial_contribution, contribution_increase):
-    # Check for None values and provide default values
-    age = age if age is not None else 30
-    initial_contribution = initial_contribution if initial_contribution is not None else 10000
-    contribution_increase = contribution_increase if contribution_increase is not None else 3
+    # Validate age and initial contribution
+    if age is None or age < 0:
+        age = 30
+    if initial_contribution is None or initial_contribution < 0:
+        initial_contribution = 10000
 
+    # Use the provided contribution increase or a default value
+    if contribution_increase is None or contribution_increase < 0:
+        contribution_increase = 3
     # Calculate 401(k) investment forecast
     years_to_retirement = 65 - age
     investment_forecast = [initial_contribution]
@@ -74,6 +72,4 @@ def update_investment_forecast_graph(age, initial_contribution, contribution_inc
 
 if __name__ == "__main__":
     app.run_server(debug=True)
-    app.scripts.config.serve_locally = True
-    app.css.config.serve_locally = True
 
