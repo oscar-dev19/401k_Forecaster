@@ -6,39 +6,23 @@ app = dash.Dash(__name__)
 
 app.layout = html.Div([
     html.H1("401(k) Investment Forecast"),
-
     # Input fields for 401(k)
     html.Label("Age:"),
     dcc.Input(id="age-input", type="number", value=30),
-
     html.Label("Initial Contribution ($):"),
     dcc.Input(id="initial-contribution-input", type="number", value=10000),
-
     html.Label("Annual Contribution Increase (%):"),
     dcc.Input(id="contribution-increase-input", type="number", value=3),
-
     # Output graph to display results
     dcc.Graph(id="investment-forecast-graph"),
 ])
 
-@app.callback(
-    Output("investment-forecast-graph", "figure"),
-    [
-        Input("age-input", "value"),
-        Input("initial-contribution-input", "value"),
-        Input("contribution-increase-input", "value"),
-    ],
-)
-def update_investment_forecast_graph(age, initial_contribution, contribution_increase):
-    # Validate age and initial contribution
-    if age is None or age < 0:
-        age = 30
-    if initial_contribution is None or initial_contribution < 0:
-        initial_contribution = 10000
+def calculate_investment_forecast(age, initial_contribution, contribution_increase):
+    # Validate inputs and provide default values if necessary
+    age = max(age, 0) if age is not None else 30
+    initial_contribution = max(initial_contribution, 0) if initial_contribution is not None else 10000
+    contribution_increase = max(contribution_increase, 0) if contribution_increase is not None else 3
 
-    # Use the provided contribution increase or a default value
-    if contribution_increase is None or contribution_increase < 0:
-        contribution_increase = 3
     # Calculate 401(k) investment forecast
     years_to_retirement = 65 - age
     investment_forecast = [initial_contribution]
@@ -50,6 +34,19 @@ def update_investment_forecast_graph(age, initial_contribution, contribution_inc
 
     x_values = list(range(age, 66))
     y_values = investment_forecast
+
+    return x_values, y_values
+
+@app.callback(
+    Output("investment-forecast-graph", "figure"),
+    [
+        Input("age-input", "value"),
+        Input("initial-contribution-input", "value"),
+        Input("contribution-increase-input", "value"),
+    ],
+)
+def update_investment_forecast_graph(age, initial_contribution, contribution_increase):
+    x_values, y_values = calculate_investment_forecast(age, initial_contribution, contribution_increase)
 
     fig = {
         'data': [
